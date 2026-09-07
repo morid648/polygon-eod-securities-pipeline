@@ -231,7 +231,7 @@ pricing, top equities by volume, watchlist performance.
 
 ![Equity Watchlist Insights](powerbi/equity_watchlist_insights.png)
 
-Full report: [`powerbi/securities_market_insights.pdf`](powerbi/securities_market_insights.html).
+Full report: [`powerbi/Market_Dashboard_Report.html`](powerbi/market_dashboard_report.html).
 Original `.pbix` included for reference in `powerbi/`.
 
 ## Monitoring & Alerting
