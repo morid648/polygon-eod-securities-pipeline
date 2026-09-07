@@ -224,14 +224,14 @@ Two dashboards consume the SA views:
 **Market Liquidity Overview** — sector-wise liquidity contribution, total
 traded value, ETF liquidity trends, 30-day ETF ranking.
 
-![Market Liquidity Overview](powerbi/market_liquidity_overview.jpg)
+![Market Liquidity Overview](powerbi/market_liquidity_overview.png)
 
 **Equity Performance & Watchlist Insights** — daily return trends, OHLC
 pricing, top equities by volume, watchlist performance.
 
-![Equity Watchlist Insights](powerbi/equity_watchlist_insights.jpg)
+![Equity Watchlist Insights](powerbi/equity_watchlist_insights.png)
 
-Full report: [`powerbi/securities_market_insights.pdf`](powerbi/securities_market_insights.pdf).
+Full report: [`powerbi/securities_market_insights.pdf`](powerbi/securities_market_insights.html).
 Original `.pbix` included for reference in `powerbi/`.
 
 ## Monitoring & Alerting
