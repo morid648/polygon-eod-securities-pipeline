@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Market Liquidity &amp; Equity Insights Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<style>
+  :root{
+    --navy:#0B2545;
+    --navy2:#13315C;
+    --blue:#2E6FE0;
+    --blue-light:#5B9BFF;
+    --accent-teal:#17A398;
+    --accent-gold:#E8A33D;
+    --accent-pink:#D6538C;
+    --bg:#F3F6FB;
+    --card:#FFFFFF;
+    --text:#1B2530;
+    --muted:#6B7A90;
+    --border:#E3E9F2;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Segoe UI',Helvetica,Arial,sans-serif;
+    background:var(--bg);
+    color:var(--text);
+  }
+  .page{
+    width:1600px;
+    max-width:100%;
+    margin:0 auto 40px auto;
+    background:var(--bg);
+    page-break-after:always;
+  }
+  .header{
+    background:linear-gradient(90deg,var(--navy) 0%, var(--navy2) 55%, var(--blue) 100%);
+    color:#fff;
+    padding:22px 36px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    border-radius:0 0 10px 10px;
+    box-shadow:0 4px 14px rgba(11,37,69,0.25);
+  }
+  .header h1{
+    margin:0;
+    font-size:30px;
+    font-weight:700;
+    letter-spacing:0.5px;
+  }
+  .header .nav-btn{
+    width:40px;height:40px;border-radius:50%;
+    background:rgba(255,255,255,0.15);
+    display:flex;align-items:center;justify-content:center;
+    font-size:20px;color:#fff;
+    text-decoration:none;
+    transition:.2s;
+  }
+  .header .nav-btn:hover{background:rgba(255,255,255,0.32);}
+  .content{
+    padding:22px 30px 36px 30px;
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:18px;
+  }
+  .card{
+    background:var(--card);
+    border-radius:12px;
+    border:1px solid var(--border);
+    box-shadow:0 2px 8px rgba(20,40,80,0.06);
+    padding:16px 18px;
+  }
+  .card h3{
+    margin:0 0 10px 0;
+    font-size:15px;
+    color:var(--navy2);
+    font-weight:600;
+    text-align:center;
+    border-bottom:2px solid var(--blue-light);
+    padding-bottom:8px;
+  }
+  .kpi-row{grid-column:span 4;display:grid;grid-template-columns:repeat(3,1fr);gap:18px;}
+  .kpi{
+    background:linear-gradient(135deg,#ffffff 0%, #EEF3FC 100%);
+    border-left:5px solid var(--blue);
+    border-radius:12px;
+    padding:20px 24px;
+    box-shadow:0 2px 8px rgba(20,40,80,0.06);
+  }
+  .kpi .value{font-size:34px;font-weight:700;color:var(--navy);}
+  .kpi .label{font-size:13px;color:var(--muted);margin-top:4px;font-weight:600;letter-spacing:.3px;text-transform:uppercase;}
+  .kpi.accent{border-left-color:var(--accent-teal);}
+  .kpi.gold{border-left-color:var(--accent-gold);}
+  .span2{grid-column:span 2;}
+  .span3{grid-column:span 3;}
+  .span4{grid-column:span 4;}
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  th{
+    background:var(--navy);
+    color:#fff;
+    text-align:left;
+    padding:8px 10px;
+    font-weight:600;
+    position:sticky;top:0;
+  }
+  td{padding:7px 10px;border-bottom:1px solid var(--border);}
+  tr:nth-child(even) td{background:#F7FAFF;}
+  tr.total-row td{font-weight:700;background:#E9F0FF;color:var(--navy);}
+  .rank-badge{
+    background:var(--blue);
+    color:#fff;
+    border-radius:5px;
+    padding:2px 8px;
+    font-weight:700;
+    font-size:12px;
+  }
+  .table-scroll{max-height:340px;overflow-y:auto;}
+  .footnote{
+    grid-column:span 4;
+    background:var(--navy);
+    color:#DCE6F7;
+    text-align:center;
+    font-size:12.5px;
+    padding:10px 20px;
+    border-radius:8px;
+    margin-top:4px;
+  }
+  .chart-box{height:260px;position:relative;}
+  .chart-box.tall{height:320px;}
+  .legend-inline{font-size:11px;color:var(--muted);text-align:center;margin-top:4px;}
+  @media print{
+    .page{page-break-after:always;}
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ PAGE 1 ============ -->
+<div class="page">
+  <div class="header">
+    <div style="width:40px;"></div>
+    <h1>Market Liquidity Overview</h1>
+    <div class="nav-btn">&#8594;</div>
+  </div>
+  <div class="content">
+
+    <div class="kpi-row">
+      <div class="kpi">
+        <div class="value">$678.70bn</div>
+        <div class="label">Total Traded Value</div>
+      </div>
+      <div class="kpi accent">
+        <div class="value">5,525</div>
+        <div class="label">Total Symbol</div>
+      </div>
+      <div class="kpi gold">
+        <div class="value">Technology &middot; 45.03%</div>
+        <div class="label">Top Sector Contribution (%)</div>
+      </div>
+    </div>
+
+    <div class="card span2">
+      <h3>ETF Liquidity Trend &mdash; 30 Days (Avg Volume vs Value)</h3>
+      <div class="chart-box"><canvas id="etfTrend"></canvas></div>
+    </div>
+
+    <div class="card span2">
+      <h3>Market Liquidity by Sector</h3>
+      <div class="chart-box"><canvas id="sectorBubble"></canvas></div>
+    </div>
+
+    <div class="card span1" style="grid-column:span 1;">
+      <h3>Sector-wise Liquidity Contribution</h3>
+      <div class="chart-box tall"><canvas id="sectorBar"></canvas></div>
+    </div>
+
+    <div class="card span1" style="grid-column:span 1;">
+      <h3>Top 4 Sectors by Symbol</h3>
+      <div class="chart-box tall"><canvas id="sectorDonut"></canvas></div>
+    </div>
+
+    <div class="card span2">
+      <h3>ETF 30-Day Liquidity Comprehensive View</h3>
+      <div class="table-scroll">
+      <table>
+        <thead>
+          <tr><th>S Name</th><th>LC</th><th>Avg Vol</th><th>Avg Tra Val</th><th>Rank</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>SPDR S&amp;P 500</td><td>772.49</td><td>53.24M</td><td>$40.06bn</td><td><span class="rank-badge">1</span></td></tr>
+          <tr><td>Invesco QQQ Trust, Series 1</td><td>723.70</td><td>46.52M</td><td>$32.30bn</td><td><span class="rank-badge">2</span></td></tr>
+          <tr><td>SPAC and New Issue ETF</td><td>146.15</td><td>101.43M</td><td>$12.32bn</td><td><span class="rank-badge">3</span></td></tr>
+          <tr><td>Direxion Daily Semiconductor Bu</td><td>142.16</td><td>89.96M</td><td>$10.59bn</td><td><span class="rank-badge">4</span></td></tr>
+          <tr><td>VanEck Semiconductor ETF</td><td>584.83</td><td>14.09M</td><td>$7.66bn</td><td><span class="rank-badge">5</span></td></tr>
+          <tr><td>iShares Russell 2000 ETF</td><td>302.71</td><td>21.59M</td><td>$6.37bn</td><td><span class="rank-badge">6</span></td></tr>
+          <tr><td>iShares Semiconductor ETF</td><td>546.61</td><td>12.35M</td><td>$6.28bn</td><td><span class="rank-badge">7</span></td></tr>
+          <tr><td>ProShares UltraPro QQQ</td><td>74.60</td><td>71.99M</td><td>$4.76bn</td><td><span class="rank-badge">8</span></td></tr>
+          <tr><td>iShares Inc iShares MSCI South</td><td>175.87</td><td>27.78M</td><td>$4.42bn</td><td><span class="rank-badge">9</span></td></tr>
+          <tr><td>Vanguard S&amp;P 500 ETF</td><td>710.17</td><td>6.13M</td><td>$4.24bn</td><td><span class="rank-badge">10</span></td></tr>
+          <tr><td>Direxion Daily Semiconductor Be</td><td>40.97</td><td>70.24M</td><td>$3.75bn</td><td><span class="rank-badge">11</span></td></tr>
+          <tr><td>iShares Core S&amp;P 500 ETF</td><td>776.19</td><td>4.36M</td><td>$3.30bn</td><td><span class="rank-badge">12</span></td></tr>
+          <tr class="total-row"><td>Total</td><td>2,25,000.34</td><td>3,418.30M</td><td>$269.78bn</td><td></td></tr>
+        </tbody>
+      </table>
+      </div>
+    </div>
+
+    <div class="footnote">
+      S name &ndash; Security name &nbsp;|| &nbsp; LC &ndash; Last close &nbsp;|| &nbsp; Avg Vol &ndash; Average volume 30 days &nbsp;|| &nbsp; Avg Tra val &ndash; Average traded value 30 days &nbsp;|| &nbsp; Rank &ndash; Liquidity rank 30 days
+    </div>
+  </div>
+</div>
+
+<!-- ============ PAGE 2 ============ -->
+<div class="page">
+  <div class="header">
+    <div class="nav-btn">&#8592;</div>
+    <h1>Equity Performance &amp; Watchlist Insights</h1>
+    <div style="width:40px;"></div>
+  </div>
+  <div class="content">
+
+    <div class="kpi-row">
+      <div class="kpi">
+        <div class="value">133.17bn</div>
+        <div class="label">Total Volume</div>
+      </div>
+      <div class="kpi accent">
+        <div class="value">6,901.09% &#8593;</div>
+        <div class="label">Max Return</div>
+      </div>
+      <div class="kpi gold">
+        <div class="value">185.30</div>
+        <div class="label">Avg Close</div>
+      </div>
+    </div>
+
+    <div class="card span2">
+      <h3>Top 20 Equities by Volume (Daily)</h3>
+      <div class="table-scroll">
+      <table>
+        <thead>
+          <tr><th>S Name</th><th>Sybl</th><th>Sector</th><th>Close</th><th>Volume</th><th>Tra Val</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>NVIDIA Corporation</td><td>NVDA</td><td>Technology</td><td>2,058.71</td><td>1.34bn</td><td>$274.37bn</td></tr>
+          <tr><td>Micron Technology, Inc.</td><td>MU</td><td>Technology</td><td>2,434.19</td><td>0.19bn</td><td>$156.87bn</td></tr>
+          <tr><td>Apple Inc.</td><td>AAPL</td><td>Technology</td><td>1,593.33</td><td>0.41bn</td><td>$128.65bn</td></tr>
+          <tr><td>Intel Corporation</td><td>INTC</td><td>Technology</td><td>932.76</td><td>1.32bn</td><td>$123.03bn</td></tr>
+          <tr><td>Microsoft Corporation</td><td>MSFT</td><td>Technology</td><td>1,403.47</td><td>0.24bn</td><td>$110.53bn</td></tr>
+          <tr><td>Amazon.com, Inc.</td><td>AMZN</td><td>Consumer Cyclical</td><td>1,068.52</td><td>0.39bn</td><td>$104.18bn</td></tr>
+          <tr><td>Palantir Technologies Inc.</td><td>PLTR</td><td>Technology</td><td>446.74</td><td>0.32bn</td><td>$48.24bn</td></tr>
+          <tr><td>Nebius Group N.V.</td><td>NBIS</td><td>Communication Services</td><td>259.20</td><td>0.06bn</td><td>$16.47bn</td></tr>
+          <tr><td>CoreWeave, Inc.</td><td>CRWV</td><td>Technology</td><td>107.73</td><td>0.09bn</td><td>$9.41bn</td></tr>
+          <tr><td>Super Micro Computer, Inc.</td><td>SMCI</td><td>Technology</td><td>69.21</td><td>0.26bn</td><td>$9.25bn</td></tr>
+          <tr><td>Nokia Corporation Sponsored</td><td>NOK</td><td>Technology</td><td>93.47</td><td>0.91bn</td><td>$8.50bn</td></tr>
+          <tr><td>SoFi Technologies, Inc.</td><td>SOFI</td><td>Financial Services</td><td>83.37</td><td>0.51bn</td><td>$8.35bn</td></tr>
+          <tr class="total-row"><td>Total</td><td></td><td></td><td>11,284.00</td><td>28.71bn</td><td>$1,058.50bn</td></tr>
+        </tbody>
+      </table>
+      </div>
+    </div>
+
+    <div class="card span2">
+      <h3>Daily Average Return Trends (Last 30 Days)</h3>
+      <div class="chart-box"><canvas id="returnTrend"></canvas></div>
+    </div>
+
+    <div class="card span2">
+      <h3>Price Trends for Watchlist Equities by Symbol</h3>
+      <div class="chart-box tall"><canvas id="watchlistBubble"></canvas></div>
+    </div>
+
+    <div class="card span1">
+      <h3>Equity Daily Prices (OHLC)</h3>
+      <div class="chart-box tall"><canvas id="ohlcChart"></canvas></div>
+    </div>
+
+    <div class="card span1">
+      <h3>Security Type Contribution</h3>
+      <div class="chart-box tall"><canvas id="secTypeDonut"></canvas></div>
+      <div class="legend-inline">Equity 133.17bn (73.9%) &middot; ETF 34.89bn (19.36%) &middot; Other 12.15bn (6.74%)</div>
+    </div>
+
+    <div class="card span4" style="max-width:50%;">
+      <h3>10 Top Volatile Equities (Last 30 Days)</h3>
+      <div class="chart-box" style="height:180px;"><canvas id="volatileBar"></canvas></div>
+    </div>
+
+    <div class="footnote">
+      S name &ndash; Security name &nbsp;|| &nbsp; Sybl &ndash; Symbol &nbsp;|| &nbsp; Tra Val &ndash; Traded Value &nbsp;|| &nbsp; OCHL &ndash; Open, Close, High, Low
+    </div>
+  </div>
+</div>
+
+<script>
+Chart.defaults.font.family = "'Segoe UI', Helvetica, Arial, sans-serif";
+Chart.defaults.color = '#4A5568';
+
+const navy='#0B2545', blue='#2E6FE0', teal='#17A398', gold='#E8A33D', pink='#D6538C', purple='#7A5AE0', lightblue='#5B9BFF';
+
+// ETF Liquidity Trend
+new Chart(document.getElementById('etfTrend'),{
+  type:'line',
+  data:{
+    labels:['27 Jul','28 Jul','30 Jul','31 Jul','5 Aug','12 Aug'],
+    datasets:[
+      {label:'Avg 30-day Volume (M)', data:[0.36,0.11,3.49,20.77,2.47,791.6], borderColor:lightblue, backgroundColor:lightblue, tension:.35, yAxisID:'y', pointRadius:4},
+      {label:'Avg 30-day Traded Value ($M)', data:[0.009,0.004,0.131,0.236,0.110,62.477], borderColor:navy, backgroundColor:navy, tension:.35, yAxisID:'y1', pointRadius:4}
+    ]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    plugins:{legend:{position:'top', labels:{boxWidth:10,font:{size:10}}}},
+    scales:{
+      y:{type:'logarithmic', title:{display:true,text:'Volume (K/M)'}},
+      y1:{type:'logarithmic', position:'right', grid:{drawOnChartArea:false}, title:{display:true,text:'Value ($M)'}}
+    }
+  }
+});
+
+// Sector Bubble
+new Chart(document.getElementById('sectorBubble'),{
+  type:'bubble',
+  data:{datasets:[
+    {label:'Technology', data:[{x:750,y:45.0,r:38}], backgroundColor:'rgba(91,155,255,0.55)'},
+    {label:'Consumer Cyclical', data:[{x:250,y:9.1,r:16}], backgroundColor:'rgba(214,83,140,0.55)'},
+    {label:'Financial Services', data:[{x:275,y:8.5,r:14}], backgroundColor:'rgba(122,90,224,0.5)'},
+    {label:'Industrials', data:[{x:520,y:8.5,r:15}], backgroundColor:'rgba(23,163,152,0.5)'},
+    {label:'Communication Services', data:[{x:660,y:8.4,r:15}], backgroundColor:'rgba(23,163,152,0.35)'},
+    {label:'Healthcare', data:[{x:1030,y:7.8,r:17}], backgroundColor:'rgba(91,155,255,0.35)'},
+    {label:'Energy', data:[{x:1180,y:3.1,r:11}], backgroundColor:'rgba(214,83,140,0.4)'},
+    {label:'Consumer Defensive', data:[{x:180,y:3.0,r:9}], backgroundColor:'rgba(91,155,255,0.7)'}
+  ]},
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    plugins:{legend:{display:false}},
+    scales:{
+      x:{title:{display:true,text:'Symbol Count'}, min:0, max:1300},
+      y:{title:{display:true,text:'% Contribution'}, min:0, max:50}
+    }
+  }
+});
+
+// Sector-wise Liquidity Contribution (bar)
+new Chart(document.getElementById('sectorBar'),{
+  type:'bar',
+  data:{
+    labels:['Technology','Consumer Cyclical','Financial Services','Industrials','Communication Services','Healthcare','Energy','Consumer Defensive'],
+    datasets:[{
+      label:'Trade Value ($T)',
+      data:[0.31,0.06,0.06,0.06,0.06,0.05,0.02,0.02],
+      backgroundColor:[blue,lightblue,lightblue,lightblue,lightblue,lightblue,lightblue,lightblue],
+      borderRadius:4
+    }]
+  },
+  options:{
+    indexAxis:'y',
+    responsive:true, maintainAspectRatio:false,
+    plugins:{legend:{display:false}},
+    scales:{x:{title:{display:true,text:'Trade Value ($T)'}}}
+  }
+});
+
+// Top 4 Sectors donut
+new Chart(document.getElementById('sectorDonut'),{
+  type:'doughnut',
+  data:{
+    labels:['Financial Services 670 (18.4%)','Healthcare 1194 (32.79%)','Technology 1021 (28.04%)','Other 756 (20.76%)'],
+    datasets:[{data:[670,1194,1021,756], backgroundColor:[purple,lightblue,gold,lightblue], borderWidth:2, borderColor:'#fff'}]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    plugins:{legend:{position:'bottom', labels:{font:{size:9}, boxWidth:8}}}
+  }
+});
+
+// Daily Average Return Trends
+new Chart(document.getElementById('returnTrend'),{
+  type:'line',
+  data:{
+    labels:['27 Jul','29 Jul','31 Jul','02 Aug','04 Aug','06 Aug','10 Aug','12 Aug'],
+    datasets:[{
+      label:'Avg Daily Return %',
+      data:[0.00,-1.38,-0.29,1.97,-0.23,-0.23,6.78,0.90],
+      borderColor:blue, backgroundColor:'rgba(46,111,224,0.15)', fill:true, tension:.3, pointRadius:4
+    }]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    plugins:{legend:{display:false}},
+    scales:{y:{ticks:{callback:v=>v+'%'}}}
+  }
+});
+
+// Watchlist Bubble
+new Chart(document.getElementById('watchlistBubble'),{
+  type:'bubble',
+  data:{datasets:[
+    {label:'AAPL', data:[{x:190,y:15,r:8}], backgroundColor:'rgba(91,155,255,0.6)'},
+    {label:'AMZN', data:[{x:210,y:20,r:9}], backgroundColor:'rgba(11,37,69,0.6)'},
+    {label:'GOOGL', data:[{x:230,y:22,r:8}], backgroundColor:'rgba(230,138,45,0.6)'},
+    {label:'JPM', data:[{x:340,y:5,r:5}], backgroundColor:'rgba(122,90,224,0.6)'},
+    {label:'META', data:[{x:560,y:10,r:6}], backgroundColor:'rgba(214,83,140,0.6)'},
+    {label:'MSFT', data:[{x:250,y:18,r:9}], backgroundColor:'rgba(91,155,255,0.4)'},
+    {label:'NVDA', data:[{x:200,y:40,r:11}], backgroundColor:'rgba(232,163,61,0.7)'},
+    {label:'TSLA', data:[{x:300,y:12,r:7}], backgroundColor:'rgba(214,83,140,0.4)'},
+    {label:'UNH', data:[{x:400,y:2.5,r:5}], backgroundColor:'rgba(23,163,152,0.6)'},
+    {label:'XOM', data:[{x:110,y:1.5,r:5}], backgroundColor:'rgba(23,163,152,0.9)'}
+  ]},
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    plugins:{legend:{position:'top', labels:{boxWidth:8, font:{size:8}}}},
+    scales:{
+      x:{title:{display:true,text:'Close Value'}},
+      y:{type:'logarithmic', title:{display:true,text:'Trade Value ($bn)'}}
+    }
+  }
+});
+
+// OHLC (styled candlestick approximation using bar chart)
+const ohlcLabels=['03 Aug','04 Aug','05 Aug','11 Aug','12 Aug','27 Jul','28 Jul','29 Jul','30 Jul','31 Jul'];
+const ohlcData=[
+  {o:8,c:12,h:14,l:6},{o:12,c:24,h:27,l:11},{o:22,c:19,h:24,l:17},
+  {o:20,c:34,h:37,l:18},{o:23,c:18,h:25,l:16},{o:15,c:9,h:17,l:7},
+  {o:10,c:16,h:19,l:8},{o:17,c:12,h:19,l:10},{o:11,c:16,h:18,l:9},{o:15,c:17,h:19,l:12}
+];
+new Chart(document.getElementById('ohlcChart'),{
+  type:'bar',
+  data:{
+    labels:ohlcLabels,
+    datasets:[
+      {label:'Body', data:ohlcData.map(d=>[Math.min(d.o,d.c),Math.max(d.o,d.c)]),
+       backgroundColor:ohlcData.map(d=>d.c>=d.o?blue:pink), borderRadius:2, barThickness:10},
+      {label:'Wick', data:ohlcData.map(d=>[d.l,d.h]),
+       backgroundColor:ohlcData.map(d=>d.c>=d.o?'rgba(46,111,224,0.35)':'rgba(214,83,140,0.35)'), barThickness:2}
+    ]
+  },
+  options:{
+    responsive:true, maintainAspectRatio:false,
+    plugins:{legend:{display:false}, tooltip:{enabled:false}},
+    scales:{x:{ticks:{font:{size:8}}}, y:{title:{display:true,text:'Price (indicative)'}}}
+  }
+});
+
+// Security Type Contribution
+new Chart(document.getElementById('secTypeDonut'),{
+  type:'doughnut',
+  data:{
+    labels:['Equity','ETF','Other'],
+    datasets:[{data:[133.17,34.89,12.15], backgroundColor:[blue,gold,lightblue], borderWidth:2, borderColor:'#fff'}]
+  },
+  options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom', labels:{font:{size:9}}}}}
+});
+
+// 10 Top Volatile Equities
+new Chart(document.getElementById('volatileBar'),{
+  type:'bar',
+  data:{
+    labels:['NXTT','JUNS','SXTC'],
+    datasets:[{
+      label:'Volatility',
+      data:[7.8,6.9,6.0],
+      backgroundColor:[lightblue,lightblue,lightblue],
+      borderRadius:4
+    }]
+  },
+  options:{
+    indexAxis:'y',
+    responsive:true, maintainAspectRatio:false,
+    plugins:{legend:{display:false}},
+    scales:{x:{max:10}}
+  }
+});
+</script>
+</body>
+</html>
