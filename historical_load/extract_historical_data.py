@@ -1,33 +1,19 @@
-import requests
+import sys
+from pathlib import Path
 from dotenv import load_dotenv
 import os
 import datetime as dt
 import time
 import csv
 
+# Allow importing lib/ from this sibling directory when run as a standalone script
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from lib.eod_data_downloader import get_stock_prices
+
 load_dotenv()
 API_KEY = os.getenv("POLYGON_API_KEY")
-POLYGON_BASE_URL = "https://api.polygon.io"
 SLEEP_SECONDS = 12
 
-def get_stock_prices(req_date):
-    url = f"{POLYGON_BASE_URL}/v2/aggs/grouped/locale/us/market/stocks/{req_date}"
-
-    try:
-        params = {
-            "adjusted": "true",
-            "include_otc": "false",
-            "apiKey": API_KEY
-        }
-        r = requests.get(url, params=params, timeout=60)
-        r.raise_for_status()
-        data = r.json()
-        results = data.get("results", [])
-    except Exception as e:
-        print(f"Error: {e}")
-        results = []
-
-    return results
 
 def extract_historical_data():
     start_date = dt.date(2026, 8, 1)
@@ -52,7 +38,7 @@ def extract_historical_data():
         current_date = start_date
         while current_date <= end_date:
             print(f"Fetching {current_date} ...")
-            results = get_stock_prices(current_date)
+            results = get_stock_prices(current_date, API_KEY)
             if results:
                 print(f"{current_date}: {len(results)} rows")
                 for row in results:
@@ -79,4 +65,3 @@ def extract_historical_data():
 
 if __name__ == "__main__":
     extract_historical_data()
-
